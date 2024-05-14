@@ -318,3 +318,16 @@
 
 <div class=legend id=legend-container/>
 
+<div class=writeup>
+  <h3 style="font-size: 1.5rem; font-weight: bold;">Design Rationale</h3>
+  <p>
+    Our design choices centered around creating an intuitive and visually appealing map of the United States, color-coded to reflect median income by state. Using shades of green, which naturally symbolize money, we aimed for clear visual differentiation with darker greens indicating higher incomes. Interaction techniques included a dropdown menu for filtering by household type and a tooltip that displays the median income when hovering over a state. Further, by clicking on a state, the camera zooms in to a clearer view of the state. Subsequently, clicking on the same state zooms the camera out. These choices create an easy-to-navigate and informative visualization. We didn't explore many alternatives as our initial design made logical sense and was straightforward to implement.
+    <br/>
+    <br/>
+    The dataset we used can be found <a href='https://data.census.gov/table/ACSST1Y2022.S1901?q=median%20household%20income%20by%20state' style='text-decoration: underline'>here</a>. This dataset is US census data on income levels across the United States for 2022. To get this data into a format we could use for our visualization, a few data transformations had to be made. This was done using python and the pandas library. Transformations involved transposing the dataset and splitting the columns into a way that it could be easily filtered by category. There were also many columns that were not necessary for our visualization, so they were dropped.
+    <br/>
+    <br/>
+    The development process involved dividing tasks as such: initial visualization containing information for one household category, implementing a dropdown menu to switch between categories, and implementing further interactivity. In total, we spent around 7-8 hours together on the project. The most time-consuming aspect was implementing the dropdown menu as it resulted in several errors in the visualizations. Despite initial challenges with the dropdown menu and color scheme, we resolved these issues quickly, leading to a functional final product.
+  </p>
+</div>
+

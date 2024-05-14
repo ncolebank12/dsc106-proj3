@@ -62,3 +62,8 @@ input {
   text-anchor: middle;
   font-size: 12px;
 }
+
+.writeup {
+	margin: auto;
+	width: 50%
+}

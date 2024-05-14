@@ -92,8 +92,8 @@
   }
   async function fetchData(name, initialize=false) {
     incomeData.clear();
-    const us = await d3.json("/states-albers-10m.json");
-    const csvData = await d3.csv("/census_cleaned.csv");
+    const us = await d3.json("states-albers-10m.json");
+    const csvData = await d3.csv("census_cleaned.csv");
     csvData.filter(d => d.Category === name).forEach(d => {
       incomeData.set(d.State, d.median_income);
     });

@@ -90,7 +90,8 @@
   const handleDropdownFocusLoss = ({ relatedTarget, currentTarget }) => {
     if (relatedTarget instanceof HTMLElement && currentTarget.contains(relatedTarget)) return 
   }
-  async function fetchData(name) {
+  async function fetchData(name, initialize=false) {
+    incomeData.clear();
     const us = await d3.json("/states-albers-10m.json");
     const csvData = await d3.csv("/census_cleaned.csv");
     csvData.filter(d => d.Category === name).forEach(d => {
@@ -98,13 +99,13 @@
     });
     const asArray = [...incomeData].map(([name, value]) => (Number(value)));
     domain = d3.extent(asArray);
-    initializeChart(us);
+    createChart(us, initialize);
     createLegend();
     
   }
   onMount(() => {
 
-    fetchData(name);
+    fetchData(name, true);
   });
   //This function will let the user know what data they are looking at also gets ride of extra legends
   function changeContent() {
@@ -163,7 +164,7 @@
     fetchData(name)
   }  
 
-  function initializeChart(us) {
+  function createChart(us, initialize = false) {
     const width = 1175;
     const height = 810;
     const colorScale = d3.scaleLinear()
@@ -173,7 +174,6 @@
     const zoom = d3.zoom()
     .scaleExtent([1, 8])
     .on("zoom", zoomed);
-
     const svg = d3.select(svgElement)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("preserveAspectRatio", "xMidYMid meet")
@@ -185,7 +185,11 @@
         .on('click', reset)
 
     const path = d3.geoPath();
-    const g = svg.append("g");
+    
+    let g = svg.select("g");
+    if (initialize) {
+      g = svg.append("g");
+    }
 
     let states = g.selectAll("path")
       .data(topojson.feature(us, us.objects.states).features)
@@ -227,24 +231,24 @@
     let lastClicked;
 
     function clicked(event, d) {
-      const [[x0, y0], [x1, y1]] = path.bounds(d);
-      console.log(lastClicked);
-      if (d == lastClicked) {
-        reset();
-        lastClicked = undefined
-        return;
-      }
-      event.stopPropagation();
+      // const [[x0, y0], [x1, y1]] = path.bounds(d);
+      // console.log(lastClicked);
+      // if (d == lastClicked) {
+      //   reset();
+      //   lastClicked = undefined
+      //   return;
+      // }
+      // event.stopPropagation();
 
-      svg.transition().duration(750).call(
-        zoom.transform,
-        d3.zoomIdentity
-          .translate(width / 2, height / 2)
-          .scale(Math.min(8, 0.9 / Math.max((x1 - x0) / width, (y1 - y0) / height)))
-          .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
-        d3.pointer(event, svg.node())
-      );
-      lastClicked = d;
+      // svg.transition().duration(750).call(
+      //   zoom.transform,
+      //   d3.zoomIdentity
+      //     .translate(width / 2, height / 2)
+      //     .scale(Math.min(8, 0.9 / Math.max((x1 - x0) / width, (y1 - y0) / height)))
+      //     .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
+      //   d3.pointer(event, svg.node())
+      // );
+      // lastClicked = d;
     }
 
     function reset() {

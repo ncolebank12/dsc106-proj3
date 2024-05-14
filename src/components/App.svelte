@@ -65,8 +65,6 @@
 } //not being used rn, would be if we can get labels to show on zoom
 
   onMount(async () => {
-    const res = await fetch('states-albers-10m.json');
-    console.log(res)
     const us = await d3.json("states-albers-10m.json");
     const csvData = await d3.csv("census_cleaned.csv");
     csvData.filter(d => d.Category === "Households").forEach(d => {
@@ -139,15 +137,17 @@
     
     svg.call(zoom);
 
+    let lastClicked;
+
     function clicked(event, d) {
       const [[x0, y0], [x1, y1]] = path.bounds(d);
+      if (d == lastClicked) {
+        reset();
+        lastClicked = undefined
+        return;
+      }
       event.stopPropagation();
-      console.log(g.selectAll('label'))
-      // data = incomeData.get(d.properties.name);
-      console.log(incomeData);
-      console.log(d.properties.name)
-      const data = incomeData.get(d.properties.name);
-      console.log(data);
+
       svg.transition().duration(750).call(
         zoom.transform,
         d3.zoomIdentity
@@ -156,6 +156,7 @@
           .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
         d3.pointer(event, svg.node())
       );
+      lastClicked = d;
     }
 
     function reset() {

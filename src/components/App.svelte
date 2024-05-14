@@ -1,3 +1,18 @@
+<main>
+  <div class='main'>
+    <h1 style="font-size: 2rem; font-weight: bold;">How does median income vary across the US?</h1>
+    <div id="myDiv">
+      <h1 style="text-align: center;  font-weight: bold;">Average Income of Any Type of Households By State</h1>
+    </div>
+    
+  </div>
+</main>
+
+<svelte:head>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.11.0/dist/full.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</svelte:head>
+
 <script>
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
@@ -8,6 +23,10 @@
   let legend;
   let incomeData = new Map();
   let domain = [];
+
+  let isDropdownOpen = false // default state (dropdown close)
+  let name = "Households";
+  let count = 0;
 
   const stateCodes = {
   "Alabama": "AL",
@@ -64,17 +83,85 @@
   "Wyoming": "WY"
 } //not being used rn, would be if we can get labels to show on zoom
 
-  onMount(async () => {
-    const us = await d3.json("states-albers-10m.json");
-    const csvData = await d3.csv("census_cleaned.csv");
-    csvData.filter(d => d.Category === "Households").forEach(d => {
+  const handleDropdownClick = () => {
+    isDropdownOpen = !isDropdownOpen // togle state on click
+  }
+
+  const handleDropdownFocusLoss = ({ relatedTarget, currentTarget }) => {
+    if (relatedTarget instanceof HTMLElement && currentTarget.contains(relatedTarget)) return 
+  }
+  async function fetchData(name) {
+    const us = await d3.json("/states-albers-10m.json");
+    const csvData = await d3.csv("/census_cleaned.csv");
+    csvData.filter(d => d.Category === name).forEach(d => {
       incomeData.set(d.State, d.median_income);
     });
     const asArray = [...incomeData].map(([name, value]) => (Number(value)));
     domain = d3.extent(asArray);
     initializeChart(us);
     createLegend();
+    
+  }
+  onMount(() => {
+
+    fetchData(name);
   });
+  //This function will let the user know what data they are looking at also gets ride of extra legends
+  function changeContent() {
+    if (name == "Families") {
+      var sdiv = document.getElementById('myDiv');
+      var removeLegend = document.getElementById('legend-container');
+      sdiv.innerHTML = '<h1 style="text-align: center; font-weight: bold;">Average Income of Households of Any Family Type By State</h1>';
+      removeLegend.innerHTML = '';
+    }
+    else if (name == "Households") {
+      var sdiv = document.getElementById('myDiv');
+      var removeLegend = document.getElementById('legend-container');
+      sdiv.innerHTML = '<h1 style="text-align: center; font-weight: bold;">Average Income of Any Type of Households By State</h1>';
+      removeLegend.innerHTML = '';
+    }
+    else if (name == "Married-couple families") {
+      var sdiv = document.getElementById('myDiv');
+      var removeLegend = document.getElementById('legend-container');
+      sdiv.innerHTML = '<h1 style="text-align: center; font-weight: bold;">Average Income of Households of the Married-couple Family Type By State</h1>';
+      removeLegend.innerHTML = '';
+    }
+    else if (name == "Nonfamily households") {
+      var sdiv = document.getElementById('myDiv');
+      var removeLegend = document.getElementById('legend-container');
+      sdiv.innerHTML = '<h1 style="text-align: center; font-weight: bold;">Average Income of Non-Family Households By State</h1>';
+      removeLegend.innerHTML = '';
+    }
+    console.log(name)
+}
+  //For some reason making separate functions for each button click works best to get the data to update
+  function handleClickFam() {
+    name = "Families"
+    changeContent()
+    fetchData(name)
+    
+  }
+	function handleClickHouse() {    
+    name = "Households"
+    changeContent()
+    fetchData(name)    
+  }
+  function handleClickMarried() {
+    name = "Married-couple families"
+    changeContent()
+    fetchData(name)
+  }
+  /*function handleMouseover(event) {
+    const state = event.target.getAttribute("data-state");
+    const income = incomeData.get(state);
+    hoverData = { state, income };
+    
+	}*/
+  function handleClickNonFam() {
+    name = "Nonfamily households"
+    changeContent()
+    fetchData(name)
+  }  
 
   function initializeChart(us) {
     const width = 1175;
@@ -141,6 +228,7 @@
 
     function clicked(event, d) {
       const [[x0, y0], [x1, y1]] = path.bounds(d);
+      console.log(lastClicked);
       if (d == lastClicked) {
         reset();
         lastClicked = undefined
@@ -160,7 +248,6 @@
     }
 
     function reset() {
-      console.log('hi')
       svg.transition().duration(750).call(
       zoom.transform,
       d3.zoomIdentity,
@@ -187,11 +274,43 @@
   
 </script>
 
-<main>
-  <div class='main'>
-    <h1>How does median income vary across the US?</h1>
-    <div class='legend' id='legend-container'/>
-    <svelte:element this="svg" bind:this={svgElement} />
-  </div>
-</main>
+
+<div class="flex justify-between items-center">
+	<div class="dropdown" on:focusout={handleDropdownFocusLoss}>
+    <button class="btn m-4 w-52" style="background-color: #013220;" on:click={handleDropdownClick}>    
+		{#if isDropdownOpen}
+			<svg
+								fill="none"
+								viewBox="0 0 24 24"
+								class="inline-block h-6 w-6 stroke-current">
+								<title>Close Dropdown</title>
+								<path
+									stroke-linecap="square"
+									stroke-linejoin="square"
+									stroke-width="5"
+									d="M6 18L18 6M6 6l12 12" />
+							</svg>
+			{:else}
+      Filter by Household Type
+			
+			{/if}
+		</button>
+		<ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 m-4" style:visibility={isDropdownOpen ? 'visible' : 'hidden'}>
+			<li><button on:click={handleClickHouse}>Households of Any Type </button></li>
+			<li><button on:click={handleClickFam}>Households of Any Family Type </button></li>
+      <li><button on:click={handleClickMarried}>Households of Married-couple Family Type</button></li>
+      <li><button on:click={handleClickNonFam}>Households of Nonfamily Type</button></li>
+
+      
+		</ul>
+	</div>
+	
+</div>
+
+
+
+
+<svelte:element this="svg" bind:this={svgElement} />
+
+<div class=legend id=legend-container/>
 

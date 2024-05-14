@@ -65,10 +65,10 @@
 } //not being used rn, would be if we can get labels to show on zoom
 
   onMount(async () => {
-    const res = await fetch('/states-albers-10m.json');
+    const res = await fetch('states-albers-10m.json');
     console.log(res)
-    const us = await d3.json("/states-albers-10m.json");
-    const csvData = await d3.csv("/census_cleaned.csv");
+    const us = await d3.json("states-albers-10m.json");
+    const csvData = await d3.csv("census_cleaned.csv");
     csvData.filter(d => d.Category === "Households").forEach(d => {
       incomeData.set(d.State, d.median_income);
     });
